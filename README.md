@@ -10,7 +10,7 @@
 * - GLMM with poisson distribution and log-link function
 * - GLMM with normal distribution and linear function
 * Independant t-tests
-* Coefficient Variation (CV) - calculated by diving the standard deviation by the mean
+* Coefficient Variation (CV) - calculated by dividing the standard deviation by the mean
 * Generalized Linear Models (GLM)
 * - GLM with normal distribution and linear function
 * - GLM with binomial distribution and logit-link function
