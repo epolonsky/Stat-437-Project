@@ -1,0 +1,126 @@
+---
+title: "STAT 437 Project"
+output: html_notebook
+---
+
+```{r}
+library(lme4)
+library(dplyr)
+
+set.seed(123)
+```
+
+```{r}
+mydata <- read.csv("/Users/aliyahaas/Downloads/STAT437_data.csv")
+head(mydata)
+
+#Change Readmission and Outcome to 0 and 1
+mydata <- mydata %>% mutate(Readmission = ifelse(Readmission == "No",0,1))
+
+#Outcome, 0 = Stable, 1 = Recovered
+mydata <- mydata %>% mutate(Outcome = ifelse(Outcome == "Stable",0,1))
+
+mydata$Condition <- as.factor(mydata$Condition)
+mydata$Patient_ID <- as.factor(mydata$Patient_ID)
+```
+
+
+## Stepwise Selection
+```{r}
+
+# Fit the initial full model
+initial_model <- lm(Satisfaction ~ ., data = mydata)
+
+# Perform stepwise selection
+stepwise_model <- step(initial_model, direction = "both")
+
+# Print the summary of the selected model
+summary(stepwise_model)
+table(mydata$Condition, mydata$Procedure)
+
+```
+Satisfaction ~ Age + Condition
+Significant p-values
+Residual standard error: 0.1753 on 968 degrees of freedom
+Multiple R-squared:  0.9612,	Adjusted R-squared:  0.9606 
+F-statistic:  1598 on 15 and 968 DF,  p-value: < 2.2e-16
+
+
+family=poisson(link="log")
+
+
+## GLMM
+
+```{r}
+library(lme4)
+
+# Condition = random effect
+glmm_satisfaction <- lmer(Satisfaction ~ Age + (1 | Condition),
+                           data = mydata,
+                           REML = FALSE)
+
+# Condition/Procedure = random effect (collinearity)
+glmm_satisfaction <- lmer(Satisfaction ~ Age + (1 | Condition/Procedure),
+                           data = mydata,
+                           REML = FALSE)
+
+summary(glmm_satisfaction)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Drawing Board (just exploring the data)
+
+```{r}
+
+model <- lm(Satisfaction ~ Age + Condition, data = mydata)
+summary(model)
+
+
+```
+
+In the paper, they used GLMM to study the general effects of elevation, flower time, and floral morph
+
+I can study the general effects of Cost, Length_of_Stay, and Condition on Satisfaction
+
+What would be a Fixed Effect? Random Effect?
+
+
+I could also look at the general effects of Procedure, Cost, and Length_of_stay on Outcome (1 or 0)
+
+
+normal distribution and log-linked function
+
+
+
+```{r}
+hist(mydata$Cost)
+library(MASS)
+boxcox(Cost ~ Age + Condition, data = mydata)
+
+mydata$Cost_bc <- mydata$Cost^0.6
+hist(mydata$Cost_bc)
+
+model_bc <- lm(Cost_bc ~ Age + Condition, data = mydata)
+
+plot(model_bc)
+```
+
+
+
