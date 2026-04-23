@@ -51,3 +51,10 @@ In this project we recreated the general statistical approach of the paper using
 # R Packages Used
 * dplyr
 * car
+* lme4
+* tidyverse
+* AER
+* MASS
+* ggplot2
+* gridExtra
+* knitr
