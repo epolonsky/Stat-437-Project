@@ -3,7 +3,7 @@
 
 **DOI:** https://doi.org/10.1016/j.pld.2023.10.001
 
-**Link to the Dataset:** https://www.kaggle.com/datasets/blueblushed/hospital-dataset-for-practice
+**Link to the Dataset:** https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records
 
 # Project Introduction
 add summary of paper and what we did on our dataset
@@ -18,5 +18,17 @@ add summary of paper and what we did on our dataset
 * - GLM with normal distribution and linear function
 * - GLM with binomial distribution and logit-link function
 
+# Statistical Methods used in our project
+* Generalized Linear Mixed Models (GLMM)
+* - GLMM with poisson distribution and log-link function
+* - GLMM with normal distribution and linear function
+* Shapiro-Wilk test
+* Wilcoxon rank-sum test
+* Levene's test
+* Generalized Linear Models (GLM)
+* - GLM with normal distribution and linear function
+* - GLM with binomial distribution and logit-link function
+    
 **R Packages Used:**
-list the r packages and versions we used in our code
+* dplyr
+* car
