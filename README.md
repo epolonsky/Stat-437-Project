@@ -29,6 +29,6 @@ add summary of paper and what we did on our dataset
 * - GLM with normal distribution and linear function
 * - GLM with binomial distribution and logit-link function
     
-**R Packages Used:**
+# R Packages Used
 * dplyr
 * car
