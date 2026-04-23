@@ -1,0 +1,221 @@
+---
+title: "Stat project"
+author: "Elena, Olive, Aliya"
+date: "2026-03-31"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data import and loading libraries
+```{r}
+set.seed(99999)
+library(dplyr)
+library(car)
+#change path according to where you have the data set stored
+Hospital_Data <- read.csv("/Users/eepolonsky/Desktop/Stat\ 437/Project/heart_failure_clinical_records_dataset.csv")
+```
+
+# Convert binary variables into labeled factors
+```{r}
+Hospital_Data$DEATH_EVENT <- factor(Hospital_Data$DEATH_EVENT, 
+                                    levels = c(0, 1), 
+                                    labels = c("Survived", "Died"))
+
+Hospital_Data$diabetes <- factor(Hospital_Data$diabetes, 
+                                levels = c(0, 1), 
+                                labels = c("No_Diabetes", "Diabetes"))
+
+Hospital_Data$anaemia <- factor(Hospital_Data$anaemia, 
+                                levels = c(0, 1), 
+                                labels = c("No_Anaemia", "Anaemia"))
+
+Hospital_Data$high_blood_pressure <- factor(Hospital_Data$high_blood_pressure, 
+                                levels = c(0, 1), 
+                                labels = c("No_Hypertension", "Hypertension"))
+
+Hospital_Data$sex <- factor(Hospital_Data$sex, 
+                                levels = c(0, 1), 
+                                labels = c("Female", "Male"))
+
+Hospital_Data$smoking <- factor(Hospital_Data$smoking, 
+                                levels = c(0, 1), 
+                                labels = c("Non_Smoker", "Smoker"))
+
+```
+
+# Define continuous outcome variables and grouping variables
+```{r}
+continuous_vars <- c(
+  "age",
+  "creatinine_phosphokinase",
+  "ejection_fraction",
+  "platelets",
+  "serum_creatinine",
+  "serum_sodium",
+  "time"
+)
+
+grouping_vars <- c(
+  "DEATH_EVENT",
+  "anaemia",
+  "diabetes",
+  "high_blood_pressure",
+  "sex",
+  "smoking"
+)
+```
+
+# Function to run Shapiro-Wilk test and return results in a single-row table
+```{r}
+run_shapiro <- function(data, var) {
+  
+  x <- data[[var]]
+  x <- x[!is.na(x)]  # remove NA values
+  
+  test <- shapiro.test(x)
+  
+  data.frame(
+    Variable = var,
+    W_statistic = test$statistic,
+    p_value = test$p.value,
+    Normal = ifelse(test$p.value > 0.05, "Yes", "No")
+  )
+}
+```
+
+#  Loop to run all the Shapiro-Wilk tests
+```{r}
+shapiro_results_list <- list()
+
+for (v in continuous_vars) {
+  shapiro_results_list[[length(shapiro_results_list) + 1]] <- run_shapiro(Hospital_Data, v)
+}
+
+shapiro_results <- do.call(rbind, shapiro_results_list)
+shapiro_results
+```
+
+Shapiro-Wilk tests were used to assess normality of continuous variables. All continuous variables significantly deviate from normality. Nonparametric Wilcoxon rank-sum tests were used instead of t-tests.
+
+# Function to run Wilcoxon rank-sum tests and return results in a single-row table
+```{r}
+run_wilcox_table <- function(data, variable, grouping_variable) {
+  
+  form <- as.formula(paste(variable, "~", grouping_variable))
+  test <- wilcox.test(form, data = data)
+  
+  p <- test$p.value
+  
+  data.frame(
+    Test = paste(variable, "by", grouping_variable),
+    p_value = p,
+    Significant = ifelse(p < 0.05, "Yes", "No")
+  )
+}
+```
+
+# Loop to run all the Wicox tests for all combinations of continuous and grouping variables
+```{r}
+results_list <- list()
+
+for (g in grouping_vars) {
+  for (y in continuous_vars) {
+    results_list[[length(results_list) + 1]] <- 
+      run_wilcox_table(Hospital_Data, y, g)
+  }
+}
+
+results <- do.call(rbind, results_list)
+results
+```
+
+# Filter statistically significant results and sort by p-value
+```{r}
+significant_results <- results[results$p_value < 0.05, ]
+
+significant_results <- significant_results[
+  order(significant_results$p_value),
+]
+significant_results
+```
+
+# Compute group medians for all statistically significant tests
+```{r}
+get_medians_from_test <- function(data, test_name) {
+  
+  parts <- strsplit(test_name, " by ")[[1]]
+  
+  variable <- parts[1]
+  grouping_variable <- parts[2]
+  
+  medians <- tapply(data[[variable]], data[[grouping_variable]], median, na.rm = TRUE)
+  
+  median_text <- paste(
+    paste0(names(medians), " = ", round(medians, 2)),
+    collapse = ", "
+  )
+  
+  data.frame(
+    Test = test_name,
+    Medians = median_text
+  )
+}
+
+median_list <- lapply(significant_results$Test, function(x) {
+  get_medians_from_test(Hospital_Data, x)
+})
+
+median_table <- do.call(rbind, median_list)
+median_table
+```
+
+There are no population-level groupings in this dataset, only individual patients. Instead of computing the coefficient of variation and running t-tests, we did Levene's tests to assess differences in variance between groups. 
+
+# Function to run Levene's tests and return results in a single-row table
+```{r}
+run_levene_table <- function(data, variable, grouping_variable) {
+  
+  form <- as.formula(paste(variable, "~", grouping_variable))
+  
+  test <- car::leveneTest(form, data = data, center = median)
+  
+  p <- test[1, "Pr(>F)"]
+  
+  data.frame(
+    Test = paste(variable, "by", grouping_variable),
+    p_value = p,
+    Significant = ifelse(p < 0.05, "Yes", "No")
+  )
+}
+```
+
+# Loop to run all the Levene's tests for all combinations of continuous and grouping variables
+```{r}
+levene_results_list <- list()
+
+for (g in grouping_vars) {
+  for (y in continuous_vars) {
+    levene_results_list[[length(levene_results_list) + 1]] <- 
+      run_levene_table(Hospital_Data, y, g)
+  }
+}
+
+levene_results <- do.call(rbind, levene_results_list)
+levene_results
+```
+
+# Filter statistically significant results and sort by p-value
+```{r}
+significant_levene <- levene_results[levene_results$p_value < 0.05, ]
+
+significant_levene <- significant_levene[
+  order(significant_levene$p_value),
+]
+
+significant_levene
+```
+
+
