@@ -6,7 +6,9 @@
 **Link to the Dataset:** https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records
 
 # Project Introduction
-add summary of paper and what we did on our dataset
+The paper “Elevational and Temporal Patterns of Pollination Success in Distylous and Homostylous Buckwheats (Fagopyrum) in the Hengduan Mountains” by Ling-Yun Wu, Shuang-Quan Huang, and Ze-Yu Tong investigated the reproductive strategies of wild buckwheat in the Hengduan Mountains in China. The authors compared two reproductive strategies including distylous species, which rely on pollinators to pollinate, and homostylous species, which can self-pollinate. At higher elevations and later flowering season there is often a decrease in pollinator activity due to colder temperatures and scarcity of insects. The authors wanted to know if homostylous species have a more reliable reproductive strategy in the challenging mountainous environments compared to the distylous species that rely on insects. In their study, they looked at 28 populations across nine different Fagopyrum species across an elevation gradient from 1299-3315 meters. They measured flower size and collected stigmas, to evaluate pollination success, over a two month period.
+
+In this project we recreated the general statistical approach of the paper using a clinical dataset containing medical records of 299 heart failure patients, each with 13 clinical features collected during follow-up periods. Instead of comparing pollination success across species and environmental gradients, we applied similar comparative statistical methods to investigate differences in clinical outcomes across patient subgroups. Specifically, we analyzed relationships between continuous clinical variables (age, creatinine phosphokinase, ejection fraction, platelets, serum creatinine, serum sodium, and time) and categorical patient characteristics (death event, anaemia, diabetes, high blood pressure, sex, and smoking).
 
 # Statistical Methods used in the paper
 * Generalized Linear Mixed Models (GLMM)
