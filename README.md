@@ -10,6 +10,23 @@ The paper “Elevational and Temporal Patterns of Pollination Success in Distylo
 
 In this project we recreated the general statistical approach of the paper using a clinical dataset containing medical records of 299 heart failure patients, each with 13 clinical features collected during follow-up periods. Instead of comparing pollination success across species and environmental gradients, we applied similar comparative statistical methods to investigate differences in clinical outcomes across patient subgroups. Specifically, we analyzed relationships between continuous clinical variables (age, creatinine phosphokinase, ejection fraction, platelets, serum creatinine, serum sodium, and time) and categorical patient characteristics (death event, anaemia, diabetes, high blood pressure, sex, and smoking).
 
+# Variables in our dataset
+**Thirteen (13) clinical features:**
+
+* age: age of the patient (years)
+* anaemia: decrease of red blood cells or hemoglobin (boolean)
+* creatinine phosphokinase  (CPK): level of the CPK enzyme in the blood (mcg/L)
+* diabetes: if the patient has diabetes (boolean)
+* ejection fraction: percentage of blood leaving the heart at each contraction  (percentage)
+* high blood pressure: if the patient has hypertension (boolean)
+* platelets: platelets in the blood (kiloplatelets/mL)
+* sex: woman or man (binary)
+* serum creatinine: level of serum creatinine in the blood (mg/dL)
+* serum sodium: level of serum sodium in the blood (mEq/L)
+* smoking: if the patient smokes or not (boolean)
+* time: follow-up period (days)
+* [target] death event: if the patient died during the follow-up period (boolean)
+
 # Statistical Methods used in the paper
 * Generalized Linear Mixed Models (GLMM)
 * - GLMM with poisson distribution and log-link function
