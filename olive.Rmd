@@ -53,5 +53,5 @@ Patients in age group 2 were less likely (B2 = -0.9808 ± 0.2041) to die during 
 Patients in age group 3 were less likely (B3 = -0.2963 ± 0.2452) to die during treatment (p=0.2269, p>>0.05, NOT significant).
 Patients in age group 4 were more likely (B4 = 1.1787 ± 0.5718) to die during treatment (p=0.0393, p<0.05, significant).
 
-fitted model: ln(p/1-p) = -1.2321(x1) - 0.9808(x2) - 0.2963(x3) + 1.1787(x3)
+fitted model: ln(p/1-p) = -1.2321(x1) - 0.9808(x2) - 0.2963(x3) + 1.1787(x4)
 
