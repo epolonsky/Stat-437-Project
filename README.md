@@ -47,8 +47,9 @@ In this project we recreated the general statistical approach of the paper using
 * Generalized Linear Models (GLM)
 * - GLM with normal distribution and linear function
 * - GLM with binomial distribution and logit-link function
-* PCA
 * Survival Analysis
+* - Kaplan-Meier
+* - Cox Proportional Hazard Model
     
 # R Packages Used
 * dplyr
