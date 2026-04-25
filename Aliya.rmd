@@ -94,3 +94,73 @@ model_glmm_gaussian <- lmer(
 
 summary(model_glmm_gaussian)
 
+
+# Survival Analysis
+surv_obj <- Surv(time = df$time, event = df$DEATH_EVENT)
+ 
+# Kaplan-Meier by age group
+km_age <- survfit(surv_obj ~ age_group, data = df)
+ 
+p_km_age <- ggsurvplot(km_age,
+  data         = df,
+  pval         = TRUE,
+  conf.int     = TRUE,
+  risk.table   = TRUE,
+  palette      = c("#2E86AB", "#F4A261", "#E84855", "#57CC99"),
+  title        = "Kaplan-Meier Survival Curves by Age Group",
+  xlab         = "Follow-up Time (Days)",
+  ylab         = "Survival Probability",
+  legend.title = "Age Group",
+  ggtheme      = theme_minimal(base_size = 12)
+)
+
+print(p_km_age)
+
+km_sex <- survfit(surv_obj ~ sex, data = df)
+ 
+p_km_sex <- ggsurvplot(km_sex,
+  data         = df,
+  pval         = TRUE,
+  conf.int     = TRUE,
+  risk.table   = TRUE,
+  palette      = c("#E84855", "#2E86AB"),
+  title        = "Kaplan-Meier Survival Curves by Sex",
+  xlab         = "Follow-up Time (Days)",
+  ylab         = "Survival Probability",
+  legend.title = "Sex",
+  ggtheme      = theme_minimal(base_size = 12)
+)
+ 
+p_km_sex
+km_plt <- survfit(surv_obj ~ platelet_group, data = df)
+ 
+p_km_plt <- ggsurvplot(km_plt,
+  data         = df,
+  pval         = TRUE,
+  conf.int     = TRUE,
+  risk.table   = TRUE,
+  palette      = c("#E84855", "#2E86AB", "#F4A261"),
+  title        = "Kaplan-Meier Survival Curves by Platelet Group",
+  xlab         = "Follow-up Time (Days)",
+  ylab         = "Survival Probability",
+  legend.title = "Platelet Group",
+  ggtheme      = theme_minimal(base_size = 12)
+)
+
+p_km_plt
+
+#Cox
+new.cox <- coxph(Surv(time, DEATH_EVENT) ~ age + anaemia + creatinine_phosphokinase + diabetes + ejection_fraction + high_blood_pressure + platelets + serum_creatinine + serum_sodium + sex + smoking, data = df)
+
+summary(new.cox)
+
+new.cox.tab <- tidy(new.cox, exponentiate = T, conf.int=T)
+
+new.cox.tab
+
+#Predict survival function
+surv.at.means <- survfit(new.cox) 
+tidy(surv.at.means)
+plotdataz
+plot(surv.at.means, xlab="days", ylab="survival probability")
+
