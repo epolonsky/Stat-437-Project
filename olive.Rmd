@@ -27,8 +27,6 @@ str(heart)
 model1 <- lm(time ~ male + anaemia, data=heart)
 summary(model1)
 ```
-Relevant variables are all normally distributed, so the linear model is applicable.
-
 Male patients were less likely (B1 = -4.752 ± 9.378) to have a long follow-up period (p=0.6128, p>0.05, NOT significant).
 Patients with anemia were less likely (B2 = -22.558 ± 9.039) to have a long follow-up period (p=0.0131, p<0.05, significant).
 
