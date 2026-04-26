@@ -1,3 +1,5 @@
+
+## Load Libraries
 library(lme4)
 library(dplyr)
 library(tidyverse)
@@ -6,17 +8,35 @@ library(MASS)
 library(ggplot2)
 library(gridExtra)
 library(knitr)
+library(lmerTest)
+library(ggfortify)
+library(survival)
+library(survminer)
+library(pROC)
+library(caret)
+library(corrplot)
+library(gridExtra)
+library(scales)
+library(broom)
+library(xfun)
 
-set.seed(123)
-
+## Read in the data
 df <- read.csv("/Users/aliyahaas/Desktop/STAT437/heart_failure_clinical_records_dataset.csv")
 head(df)
 
-range(df$platelets)
-set.seed(123)
 
 ## GLMM with Poisson and Log link function
 
+#Divide age into 3 groups 
+df$age_group <- cut(
+  df$age,
+  breaks = c(39, 55, 70, 95),
+  labels = c("40-55", "56-70", "71-95"),
+  right = TRUE,
+  include.lowest = TRUE
+)
+
+#Divide time (length of follow-up period in days) into 6 groups
 df$time_group <- cut(
   df$time,
   breaks = c(4, 38, 73, 143, 213, 248, 285),
@@ -24,6 +44,7 @@ df$time_group <- cut(
   include.lowest = TRUE
 )
 
+#divide platelet levels into 3 groups
 df$platelet_group <- cut(
   df$platelets,
   breaks = quantile(df$platelets, probs = c(0, 0.33, 0.66, 1), na.rm = TRUE),
@@ -31,6 +52,7 @@ df$platelet_group <- cut(
   include.lowest = TRUE
 )
 
+#divide ejection fraction percentages into 3 groups
 df$ef_group <- cut(
   df$ejection_fraction,
   breaks = c(0, 40, 60, 100),
@@ -38,8 +60,10 @@ df$ef_group <- cut(
   include.lowest = TRUE
 )
 
+#interaction between time_group and sex
 df$cluster <- interaction(df$time_group, df$sex)
 
+#Create clustered data frame, incorporating number of patients 
 df_grouped <- df %>%
   group_by(age_group, sex, platelet_group, ef_group, cluster) %>%
   summarise(
@@ -50,6 +74,7 @@ df_grouped <- df %>%
 
 print(df_grouped)
 
+#Poisson model with log link function (log link = number of patients)
 poisson_glmm <- glmer(
   death_count ~ platelet_group + ef_group +
     offset(log(n_patients)) +
@@ -62,11 +87,13 @@ poisson_glmm <- glmer(
 summary(poisson_glmm)
 
 
-# Gaussian with linear function
 
+## GLMM with Gaussian Distribution with linear function on ejection fraction
+
+#scale continuous variables
 gaussian_glmm <- lmer(
   ejection_fraction ~ age_group +
-                      scale(serum_creatinine) +
+                      scale(serum_creatinine) + 
                       scale(serum_sodium) +
                       platelet_group +
                       sex +
@@ -82,10 +109,8 @@ gaussian_glmm <- lmer(
 
 summary(gaussian_glmm)
 
-re_var <- as.data.frame(VarCorr(gaussian_glmm))
-print(re_var)
 
-# Survival Analysis
+## Survival Analysis
 surv_obj <- Surv(time = df$time, event = df$DEATH_EVENT)
  
 # Kaplan-Meier by age group
@@ -106,51 +131,11 @@ p_km_age <- ggsurvplot(km_age,
 
 print(p_km_age)
 
-km_sex <- survfit(surv_obj ~ sex, data = df)
- 
-p_km_sex <- ggsurvplot(km_sex,
-  data         = df,
-  pval         = TRUE,
-  conf.int     = TRUE,
-  risk.table   = TRUE,
-  palette      = c("#E84855", "#2E86AB"),
-  title        = "Kaplan-Meier Survival Curves by Sex",
-  xlab         = "Follow-up Time (Days)",
-  ylab         = "Survival Probability",
-  legend.title = "Sex",
-  ggtheme      = theme_minimal(base_size = 12)
-)
- 
-p_km_sex
-km_plt <- survfit(surv_obj ~ platelet_group, data = df)
- 
-p_km_plt <- ggsurvplot(km_plt,
-  data         = df,
-  pval         = TRUE,
-  conf.int     = TRUE,
-  risk.table   = TRUE,
-  palette      = c("#E84855", "#2E86AB", "#F4A261"),
-  title        = "Kaplan-Meier Survival Curves by Platelet Group",
-  xlab         = "Follow-up Time (Days)",
-  ylab         = "Survival Probability",
-  legend.title = "Platelet Group",
-  ggtheme      = theme_minimal(base_size = 12)
-)
-
-p_km_plt
-
-#Cox
+#Cox and Forest Plot 
 new.cox <- coxph(Surv(time, DEATH_EVENT) ~ age + anaemia + creatinine_phosphokinase + diabetes + ejection_fraction + high_blood_pressure + platelets + serum_creatinine + serum_sodium + sex + smoking, data = df)
 
 summary(new.cox)
 
-new.cox.tab <- tidy(new.cox, exponentiate = T, conf.int=T)
-
-new.cox.tab
-
-#Predict survival function
-surv.at.means <- survfit(new.cox) 
-tidy(surv.at.means)
-plotdataz
-plot(surv.at.means, xlab="days", ylab="survival probability")
+#generate plot
+ggforest(new.cox, data = df)
 
