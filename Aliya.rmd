@@ -76,9 +76,9 @@ gaussian_glmm <- lmer(
                       smoking +
                       diabetes +
                       anaemia +
-                      (1 | time_group),    # random intercept by follow-up period
+                      (1 | time_group),   
   data    = df,
-  REML    = TRUE,                          # REML for variance estimation
+  REML    = TRUE,                        
   control = lmerControl(optimizer = "bobyqa",
                         optCtrl   = list(maxfun = 2e5))
 )
