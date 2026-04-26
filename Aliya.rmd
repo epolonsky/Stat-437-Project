@@ -17,10 +17,10 @@ set.seed(123)
 
 ## GLMM with Poisson and Log link function
 
-df$age_group <- cut(
-  df$age,
-  breaks = c(39, 55, 70, 95),
-  labels = c("40-55", "56-70", "71-95"),
+df$time_group <- cut(
+  df$time,
+  breaks = c(4, 38, 73, 143, 213, 248, 285),
+  labels = c("4-38", "39-73", "74-143", "144-213", "214-248", "249-284"),
   include.lowest = TRUE
 )
 
@@ -38,62 +38,55 @@ df$ef_group <- cut(
   include.lowest = TRUE
 )
 
-
-library(dplyr)
+df$cluster <- interaction(df$time_group, df$sex)
 
 df_grouped <- df %>%
-  group_by(age_group, sex, platelet_group, ef_group) %>%
+  group_by(age_group, sex, platelet_group, ef_group, cluster) %>%
   summarise(
-    n_patients = n(),
+    n_patients  = n(),
     death_count = sum(DEATH_EVENT),
-    .groups = "drop"
+    .groups     = "drop"
   )
 
 print(df_grouped)
 
-df_grouped$cluster <- interaction(
-  df_grouped$age_group,
-  df_grouped$sex
-)
-
-library(lme4)
-
-model_glmm <- glmer(
+poisson_glmm <- glmer(
   death_count ~ platelet_group + ef_group +
     offset(log(n_patients)) +
     (1 | cluster),
-  family = poisson(link = "log"),
-  data = df_grouped,
+  family  = poisson(link = "log"),
+  data    = df_grouped,
   control = glmerControl(optimizer = "bobyqa")
 )
 
+summary(poisson_glmm)
 
-summary(model_glmm)
+icc <- 0.9391 / (0.9391 + (pi^2 / 3))  
+cat("ICC:", round(icc, 4))
 
 
 # Gaussian with linear function
-df <- df %>%
-  mutate(time_group = cut(
-    time,
-    breaks = c(4, 38, 73, 143, 213, 248, 285),
-    labels = c("4-38", "39-73", "74-143", "144-213", "214-248", "249-284"),
-    include.lowest = TRUE
-  ))
 
-df$cluster <- interaction(df$age_group, df$sex)
-df$serum_creatinine <- scale(df$serum_creatinine)
-
-library(lme4)
-df$serum_creatinine <- scale(df$serum_creatinine)
-
-model_glmm_gaussian <- lmer(
-  serum_creatinine ~ age_group * time_group + platelet_group + sex +
-    (1 | cluster),
-  data = df
+gaussian_glmm <- lmer(
+  ejection_fraction ~ age_group +
+                      scale(serum_creatinine) +
+                      scale(serum_sodium) +
+                      platelet_group +
+                      sex +
+                      smoking +
+                      diabetes +
+                      anaemia +
+                      (1 | time_group),    # random intercept by follow-up period
+  data    = df,
+  REML    = TRUE,                          # REML for variance estimation
+  control = lmerControl(optimizer = "bobyqa",
+                        optCtrl   = list(maxfun = 2e5))
 )
 
-summary(model_glmm_gaussian)
+summary(gaussian_glmm)
 
+re_var <- as.data.frame(VarCorr(gaussian_glmm))
+print(re_var)
 
 # Survival Analysis
 surv_obj <- Surv(time = df$time, event = df$DEATH_EVENT)
