@@ -94,30 +94,6 @@ model_glmm_gaussian <- lmer(
 
 summary(model_glmm_gaussian)
 
-#Binomail GLMM
-
-binomial_glmm <- glmer(
-  DEATH_EVENT ~ ejection_fraction +
-                serum_creatinine +
-                serum_sodium +
-                creatinine_phosphokinase +
-                platelets +
-                anaemia +
-                diabetes +
-                high_blood_pressure +
-                sex +
-                smoking +
-                time +
-                (1 | age_group), 
-  data    = df,
-  family  = binomial(link = "logit"),
-  control = glmerControl(optimizer = "bobyqa",
-                         optCtrl   = list(maxfun = 2e5),
-                         autoscale = TRUE)
-)
- 
-summary(binomial_glmm)
-
 
 # Survival Analysis
 surv_obj <- Surv(time = df$time, event = df$DEATH_EVENT)
