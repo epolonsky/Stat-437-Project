@@ -61,9 +61,6 @@ poisson_glmm <- glmer(
 
 summary(poisson_glmm)
 
-icc <- 0.9391 / (0.9391 + (pi^2 / 3))  
-cat("ICC:", round(icc, 4))
-
 
 # Gaussian with linear function
 
